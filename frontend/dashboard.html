@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bosh sahifa — CareTrack Klinika</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Menyu">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span class="page-title">Bosh sahifa</span>
+      </div>
+      <div class="topbar-right">
+        <span id="topbarDate" style="font-size:.8rem;color:var(--text-muted);font-weight:500"></span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="page-header-text">
+          <h2 id="welcomeMsg">Xush kelibsiz</h2>
+          <p>CareTrack klinika boshqaruv tizimiga umumiy ko'rinish</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <a href="/patients.html" class="btn btn-secondary btn-sm">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Bemorlar
+          </a>
+          <a href="/diseases.html" class="btn btn-primary btn-sm">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M9 12h6m-3-3v6M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+            Tashxislar
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card blue">
+          <div class="stat-icon"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div><div class="stat-value" id="statDoctors">—</div><div class="stat-label">Jami shifokorlar</div></div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-icon"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+          <div><div class="stat-value" id="statPatients">—</div><div class="stat-label">Jami bemorlar</div></div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-icon"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M9 12h6m-3-3v6M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></div>
+          <div><div class="stat-value" id="statDiagnoses">—</div><div class="stat-label">Jami tashxislar</div></div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-icon"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div>
+          <div><div class="stat-value" id="statSevere">—</div><div class="stat-label">Og'ir / Kritik holat</div></div>
+        </div>
+      </div>
+
+      <!-- Main grid -->
+      <div class="dashboard-grid">
+
+        <!-- So'nggi bemorlar -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>So'nggi qo'shilgan bemorlar</h3>
+              <p style="font-size:.78rem;color:var(--text-muted);margin-top:2px">Tizimga ro'yxatdan o'tgan oxirgi bemorlar</p>
+            </div>
+            <a href="/patients.html" class="btn btn-secondary btn-sm">Barchasini ko'rish</a>
+          </div>
+          <div class="card-body" style="padding:0 22px">
+            <div id="recentPatients" class="recent-list"></div>
+          </div>
+        </div>
+
+        <!-- O'ng ustun -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+
+          <!-- Og'irlik darajasi -->
+          <div class="card">
+            <div class="card-header"><h3>Tashxis og'irlik darajasi</h3></div>
+            <div class="card-body">
+              <div class="severity-bar" id="severityBar">
+                <div class="loading-state" style="padding:20px"><div class="spinner"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bo'limlar -->
+          <div class="card">
+            <div class="card-header"><h3>Bo'limlar</h3></div>
+            <div class="card-body" id="deptList">
+              <div class="loading-state" style="padding:20px"><div class="spinner"></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+setupLayout('dashboard');
+
+const user = Auth.user();
+document.getElementById('welcomeMsg').textContent = `Xush kelibsiz, ${user?.name?.split(' ')[0] || ''}!`;
+document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('uz-UZ', {
+  weekday:'long', year:'numeric', month:'long', day:'numeric'
+});
+
+async function loadDashboard() {
+  try {
+    const [stats, patients] = await Promise.all([API.getStats(), API.getPatients()]);
+
+    document.getElementById('statDoctors').textContent   = stats.totalDoctors;
+    document.getElementById('statPatients').textContent  = stats.totalPatients;
+    document.getElementById('statDiagnoses').textContent = stats.totalDiagnoses;
+    document.getElementById('statSevere').textContent    = (stats.severityBreakdown.Severe||0) + (stats.severityBreakdown.Critical||0);
+
+    // Recent patients
+    const recent = [...patients].reverse().slice(0, 6);
+    const bloodBg = { 'A+':'#dbeafe','A-':'#e0e7ff','B+':'#d1fae5','B-':'#fef3c7','AB+':'#ede9fe','AB-':'#fce7f3','O+':'#fee2e2','O-':'#ffedd5' };
+    const bloodFg = { 'A+':'#1e40af','A-':'#3730a3','B+':'#065f46','B-':'#92400e','AB+':'#5b21b6','AB-':'#9d174d','O+':'#991b1b','O-':'#9a3412' };
+
+    document.getElementById('recentPatients').innerHTML = recent.length
+      ? recent.map(p => `
+        <div class="recent-item">
+          <div class="recent-avatar">${initials(p.firstName, p.lastName)}</div>
+          <div class="recent-info">
+            <div class="recent-name">${p.firstName} ${p.lastName}</div>
+            <div class="recent-sub">${p.doctorName} &bull; ${GENDER_MAP[p.gender]||p.gender}, ${age(p.dateOfBirth)} yosh</div>
+          </div>
+          <span class="badge" style="background:${bloodBg[p.bloodType]||'#f1f5f9'};color:${bloodFg[p.bloodType]||'#475569'}">${p.bloodType}</span>
+          <a href="/patient-profile.html?id=${p.id}" class="btn btn-ghost btn-sm btn-icon" title="Ko'rish">${SVG.eye()}</a>
+        </div>`).join('')
+      : '<p style="padding:20px 0;color:var(--text-muted);text-align:center;font-size:.875rem">Hozircha bemorlar yo\'q</p>';
+
+    // Severity
+    const sev = stats.severityBreakdown;
+    const total = stats.totalDiagnoses || 1;
+    const sevItems = [
+      { key:'Mild',     label:'Yengil',    cls:'mild' },
+      { key:'Moderate', label:"O'rtacha",  cls:'moderate' },
+      { key:'Severe',   label:"Og'ir",     cls:'severe' },
+      { key:'Critical', label:'Kritik',    cls:'critical' },
+    ];
+    document.getElementById('severityBar').innerHTML = sevItems.map(s => `
+      <div class="severity-row">
+        <span class="severity-label">${s.label}</span>
+        <div class="severity-track">
+          <div class="severity-fill ${s.cls}" style="width:${((sev[s.key]||0)/total*100).toFixed(1)}%"></div>
+        </div>
+        <span class="severity-count">${sev[s.key]||0}</span>
+      </div>`).join('');
+
+    // Departments
+    const dept = stats.departmentBreakdown;
+    const deptColors = ['badge-blue','badge-teal','badge-purple','badge-amber','badge-sky','badge-green'];
+    const entries = Object.entries(dept);
+    document.getElementById('deptList').innerHTML = entries.length
+      ? entries.map(([d,c], i) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--divider);${i===entries.length-1?'border:none':''}">
+          <span style="font-size:.875rem;font-weight:500;color:var(--text)">${d}</span>
+          <span class="badge ${deptColors[i%deptColors.length]}">${c} shifokor</span>
+        </div>`).join('')
+      : '<p style="color:var(--text-muted);font-size:.875rem">Ma\'lumot yo\'q</p>';
+
+  } catch (e) {
+    Toast.error('Dashboard ma\'lumotlarini yuklashda xatolik');
+  }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

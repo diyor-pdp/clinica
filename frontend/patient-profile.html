@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bemor profili — CareTrack Klinika</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span class="page-title">Bemor profili</span>
+      </div>
+      <div class="topbar-right">
+        <a href="/patients.html" class="btn btn-secondary btn-sm">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M15 18l-6-6 6-6"/></svg>
+          Orqaga
+        </a>
+      </div>
+    </header>
+
+    <div class="content" id="profileContent">
+      <div class="loading-state"><div class="spinner"></div><p>Yuklanmoqda…</p></div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+setupLayout('patients');
+
+const pid = new URLSearchParams(location.search).get('id');
+if (!pid) window.location.href = '/patients.html';
+
+const canEdit   = Auth.is('admin','clinician','reception');
+const canDelete = Auth.is('admin');
+const canDx     = Auth.is('admin','clinician');
+
+const bloodBg = {'A+':'rgba(219,234,254,.8)','A-':'rgba(224,231,255,.8)','B+':'rgba(209,250,229,.8)','B-':'rgba(254,243,199,.8)','AB+':'rgba(237,233,254,.8)','AB-':'rgba(252,231,243,.8)','O+':'rgba(254,226,226,.8)','O-':'rgba(255,237,213,.8)'};
+const bloodFg = {'A+':'#1e40af','A-':'#3730a3','B+':'#065f46','B-':'#92400e','AB+':'#5b21b6','AB-':'#9d174d','O+':'#991b1b','O-':'#9a3412'};
+
+const SPEC_UZ = {
+  Cardiology:'Kardiologiya', Neurology:'Nevrologiya', Dermatology:'Dermatologiya',
+  Orthopedics:'Ortopediya', 'General Practice':'Umumiy amaliyot',
+  Pediatrics:'Pediatriya', Oncology:'Onkologiya', Radiology:'Radiologiya', Psychiatry:'Psixiatriya'
+};
+
+async function load() {
+  try {
+    const p = await API.getPatient(pid);
+    render(p);
+  } catch {
+    document.getElementById('profileContent').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M15 9l-6 6M9 9l6 6"/></svg></div>
+        <h3>Bemor topilmadi</h3>
+        <p>Ushbu bemor o'chirilgan yoki mavjud emas.</p>
+        <a href="/patients.html" class="btn btn-primary" style="margin-top:18px">Bemorlar ro'yxatiga qaytish</a>
+      </div>`;
+  }
+}
+
+function render(p) {
+  document.title = `${p.firstName} ${p.lastName} — CareTrack Klinika`;
+  const ini = initials(p.firstName, p.lastName);
+  const bg  = bloodBg[p.bloodType] || 'rgba(241,245,249,.8)';
+  const fg  = bloodFg[p.bloodType] || '#475569';
+
+  const sevCount = (s) => p.diagnoses.filter(d => d.severity === s).length;
+
+  document.getElementById('profileContent').innerHTML = `
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="/patients.html">Bemorlar</a>
+      <span class="sep">›</span>
+      <span>${p.firstName} ${p.lastName}</span>
+    </div>
+
+    <!-- Hero -->
+    <div class="profile-hero">
+      <div class="profile-avatar">${ini}</div>
+      <div class="profile-info">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <h2>${p.firstName} ${p.lastName}</h2>
+          <span class="badge" style="background:rgba(255,255,255,.18);color:white;border:1px solid rgba(255,255,255,.25)">${GENDER_MAP[p.gender]||p.gender}</span>
+          <span class="badge" style="background:${bg};color:${fg};border:1px solid rgba(255,255,255,.15)">${p.bloodType || 'Noma\'lum'}</span>
+        </div>
+        <div class="profile-meta">
+          <div class="profile-meta-item">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            ${formatDate(p.dateOfBirth)} (${age(p.dateOfBirth)} yosh)
+          </div>
+          <div class="profile-meta-item">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            ${p.phone}
+          </div>
+          ${p.email ? `<div class="profile-meta-item"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>${p.email}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:1">
+        ${canDx ? `<a href="/diseases.html?patientId=${p.id}" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:white;border:1.5px solid rgba(255,255,255,.3)">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
+          Tashxis qo'shish
+        </a>` : ''}
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div style="display:grid;grid-template-columns:1.9fr 1fr;gap:20px" id="profileGrid">
+
+      <!-- Chap -->
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- Shaxsiy ma'lumotlar -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Shaxsiy ma'lumotlar</h3>
+            ${canEdit ? `<button class="btn btn-secondary btn-sm" onclick="editPatient()">
+              ${SVG.edit()} Tahrirlash
+            </button>` : ''}
+          </div>
+          <div class="card-body">
+            <div class="info-grid">
+              <div class="info-item"><label>Sug'urta raqami</label><span class="icd-pill">${p.insuranceNumber||'—'}</span></div>
+              <div class="info-item"><label>Ro'yxatga olingan sana</label><span>${formatDate(p.createdAt)}</span></div>
+              <div class="info-item"><label>Manzil</label><span>${p.address||'—'}</span></div>
+              <div class="info-item"><label>Favqulodda aloqa</label><span>${p.emergencyContact||'—'}</span></div>
+              ${p.updatedAt ? `<div class="info-item"><label>Oxirgi yangilanish</label><span>${formatDate(p.updatedAt)}</span></div>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Tashxislar tarixi -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>Tashxislar tarixi</h3>
+              <p style="font-size:.78rem;color:var(--text-muted);margin-top:2px">Bemorga qo'yilgan barcha tashxislar</p>
+            </div>
+            <span class="badge badge-amber">${p.diagnoses.length} ta yozuv</span>
+          </div>
+          ${p.diagnoses.length ? `
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ICD Kodi</th><th>Tashxis</th><th>Og'irlik</th><th>Holat</th><th>Sana</th>${canDelete?'<th>Amal</th>':''}</tr></thead>
+              <tbody>${p.diagnoses.map(d => `
+                <tr>
+                  <td><span class="icd-pill">${d.icdCode}</span></td>
+                  <td>
+                    <div class="td-primary">${d.description}</div>
+                    ${d.treatment ? `<div class="td-muted">${d.treatment.substring(0,55)}${d.treatment.length>55?'…':''}</div>` : ''}
+                  </td>
+                  <td>${severityBadge(d.severity)}</td>
+                  <td>${statusBadge(d.status)}</td>
+                  <td style="font-size:.78rem;color:var(--text-muted)">${formatDate(d.diagnosedAt)}</td>
+                  ${canDelete ? `<td><button class="btn btn-danger btn-sm btn-icon" onclick="delDx('${d.id}','${d.description}')" title="O'chirish">${SVG.trash()}</button></td>` : ''}
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>` : `
+          <div class="card-body">
+            <div class="empty-state" style="padding:32px">
+              <div class="empty-icon">${SVG.pulse()}</div>
+              <h3>Tashxis yozuvlari yo'q</h3>
+              ${canDx ? `<p><a href="/diseases.html?patientId=${p.id}">Birinchi tashxisni qo'shish</a></p>` : '<p>Hozircha tashxis qo\'yilmagan</p>'}
+            </div>
+          </div>`}
+        </div>
+
+      </div>
+
+      <!-- O'ng ustun -->
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- Biriktirilgan shifokor -->
+        <div class="card">
+          <div class="card-header"><h3>Mas'ul shifokor</h3></div>
+          <div class="card-body" style="text-align:center">
+            ${p.doctor ? `
+            <div style="width:56px;height:56px;border-radius:16px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;margin:0 auto 14px">${initials(p.doctor.firstName,p.doctor.lastName)}</div>
+            <div style="font-weight:700;font-size:1rem;margin-bottom:4px">Dr. ${p.doctor.firstName} ${p.doctor.lastName}</div>
+            <span class="badge badge-blue" style="margin-bottom:16px">${SPEC_UZ[p.doctor.specialization]||p.doctor.specialization}</span>
+            <div class="info-grid" style="text-align:left;margin-top:12px">
+              <div class="info-item"><label>Bo'lim</label><span>${SPEC_UZ[p.doctor.department]||p.doctor.department}</span></div>
+              <div class="info-item"><label>Telefon</label><span>${p.doctor.phone}</span></div>
+              <div class="info-item" style="grid-column:1/-1"><label>Email</label><span style="font-size:.82rem">${p.doctor.email}</span></div>
+              ${p.doctor.availability ? `<div class="info-item" style="grid-column:1/-1"><label>Ish vaqti</label><span style="font-size:.82rem">${p.doctor.availability}</span></div>` : ''}
+            </div>` : '<p style="color:var(--text-muted);font-size:.875rem">Shifokor biriktirilmagan</p>'}
+          </div>
+        </div>
+
+        <!-- Sog'liq xulosasi -->
+        <div class="card">
+          <div class="card-header"><h3>Sog'liq xulosasi</h3></div>
+          <div class="card-body">
+            ${[
+              {key:'Mild',     label:'Yengil',   cls:'mild'},
+              {key:'Moderate', label:"O'rtacha", cls:'moderate'},
+              {key:'Severe',   label:"Og'ir",    cls:'severe'},
+              {key:'Critical', label:'Kritik',   cls:'critical'},
+            ].map(s => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--divider)">
+              <span style="font-size:.875rem;font-weight:500">${s.label}</span>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:60px;height:5px;background:var(--bg-alt);border-radius:3px;overflow:hidden">
+                  <div style="height:100%;border-radius:3px;" class="severity-fill ${s.cls}" style="width:${p.diagnoses.length?sevCount(s.key)/p.diagnoses.length*100:0}%"></div>
+                </div>
+                <span style="font-weight:700;font-size:.875rem;min-width:16px;text-align:right">${sevCount(s.key)}</span>
+              </div>
+            </div>`).join('')}
+            <div style="margin-top:16px;background:var(--primary-light);border-radius:var(--radius);padding:14px;text-align:center">
+              <div style="font-size:2rem;font-weight:800;color:var(--primary)">${p.diagnoses.length}</div>
+              <div style="font-size:.78rem;color:var(--text-muted);margin-top:2px;font-weight:500">Jami tashxislar</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Xavfli zona (faqat admin) -->
+        ${canDelete ? `
+        <div class="card" style="border:1.5px solid #fecaca">
+          <div class="card-header" style="border-bottom-color:#fee2e2">
+            <h3 style="color:var(--danger)">Xavfli zona</h3>
+          </div>
+          <div class="card-body">
+            <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:14px;line-height:1.6">Ushbu amalni bajarsangiz bemor va unga tegishli barcha tashxislar butunlay o'chiriladi.</p>
+            <button class="btn btn-danger btn-full btn-sm" onclick="delPatient()">${SVG.trash()} Bemorni o'chirish</button>
+          </div>
+        </div>` : ''}
+
+      </div>
+    </div>`;
+
+  window._patient = p;
+
+  // Severity bar animation
+  setTimeout(() => {
+    document.querySelectorAll('.severity-fill').forEach(el => {
+      const cls = [...el.classList].find(c => ['mild','moderate','severe','critical'].includes(c));
+      const key = {mild:'Mild',moderate:'Moderate',severe:'Severe',critical:'Critical'}[cls];
+      const pct = p.diagnoses.length ? sevCount(key) / p.diagnoses.length * 100 : 0;
+      el.style.width = pct + '%';
+    });
+  }, 100);
+
+  // Responsive grid
+  checkGrid();
+}
+
+function checkGrid() {
+  const g = document.getElementById('profileGrid');
+  if (!g) return;
+  g.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1.9fr 1fr';
+}
+window.addEventListener('resize', checkGrid);
+
+function editPatient() {
+  window.location.href = '/patients.html';
+}
+
+async function delPatient() {
+  const p = window._patient;
+  const ok = await confirmDialog("Bemorni o'chirish", `<strong>${p.firstName} ${p.lastName}</strong> va barcha tashxis yozuvlari o'chiriladi. Bu amalni bekor qilib bo'lmaydi.`);
+  if (!ok) return;
+  try {
+    await API.deletePatient(pid);
+    Toast.success('Bemor muvaffaqiyatli o\'chirildi');
+    setTimeout(() => window.location.href = '/patients.html', 1200);
+  } catch (e) { Toast.error(e.message || 'O\'chirishda xatolik'); }
+}
+
+async function delDx(id, desc) {
+  const ok = await confirmDialog("Tashxisni o'chirish", `<strong>${desc}</strong> tashxisini o'chirishni tasdiqlaysizmi?`);
+  if (!ok) return;
+  try { await API.deleteDisease(id); Toast.success('Tashxis o\'chirildi'); load(); }
+  catch (e) { Toast.error(e.message || 'O\'chirishda xatolik'); }
+}
+
+load();
+</script>
+</body>
+</html>

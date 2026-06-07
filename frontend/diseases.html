@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tashxislar — CareTrack Klinika</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span class="page-title">Tashxislar</span>
+      </div>
+      <div class="topbar-right" id="addWrap">
+        <button class="btn btn-primary btn-sm" id="addBtn">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
+          Tashxis qo'shish
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h2>Tashxis va kasallik yozuvlari</h2>
+          <p>Barcha bemorlarning kasallik tarixi va tashxislari</p>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" class="form-control" id="searchInput" placeholder="Tavsif, ICD kodi yoki belgilar bo'yicha qidirish…">
+        </div>
+        <select class="form-control filter-select" id="filterSeverity">
+          <option value="">Barcha og'irlik darajalari</option>
+          <option value="Mild">Yengil</option>
+          <option value="Moderate">O'rtacha</option>
+          <option value="Severe">Og'ir</option>
+          <option value="Critical">Kritik</option>
+        </select>
+        <select class="form-control filter-select" id="filterStatus">
+          <option value="">Barcha holatlar</option>
+          <option value="Ongoing">Davom etmoqda</option>
+          <option value="Chronic">Surunkali</option>
+          <option value="Recurrent">Qaytuvchi</option>
+          <option value="Resolved">Tuzalgan</option>
+        </select>
+        <select class="form-control filter-select" id="filterPatient"><option value="">Barcha bemorlar</option></select>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Tashxis yozuvlari</h3>
+          <span id="countBadge" class="badge badge-amber"></span>
+        </div>
+        <div id="tableWrap">
+          <div class="loading-state"><div class="spinner"></div><p>Yuklanmoqda…</p></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="dxModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="modalTitle">Tashxis qo'shish</h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Bemor <span class="req">*</span></label>
+          <select class="form-control" id="fPat"><option value="">Bemorni tanlang…</option></select>
+        </div>
+        <div class="form-group"><label>ICD Kodi <span class="req">*</span></label>
+          <input type="text" class="form-control" id="fIcd" placeholder="masalan: I10, E11, G43">
+          <div class="form-hint">Xalqaro kasalliklar tasnifi kodi</div>
+        </div>
+      </div>
+      <div class="form-group"><label>Tashxis tavsifi <span class="req">*</span></label>
+        <input type="text" class="form-control" id="fDesc" placeholder="masalan: Arterial gipertenziya">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Og'irlik darajasi <span class="req">*</span></label>
+          <select class="form-control" id="fSev">
+            <option value="">Tanlang…</option>
+            <option value="Mild">Yengil</option>
+            <option value="Moderate">O'rtacha</option>
+            <option value="Severe">Og'ir</option>
+            <option value="Critical">Kritik</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Holati</label>
+          <select class="form-control" id="fStat">
+            <option value="Ongoing">Davom etmoqda</option>
+            <option value="Chronic">Surunkali</option>
+            <option value="Recurrent">Qaytuvchi</option>
+            <option value="Resolved">Tuzalgan</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Belgilar va alomatlar</label>
+        <textarea class="form-control" id="fSymp" placeholder="Asosiy belgilar va alomatlarni kiriting…"></textarea>
+      </div>
+      <div class="form-group"><label>Davolash rejasi</label>
+        <textarea class="form-control" id="fTreat" placeholder="Dori-darmonlar va davolash usullarini kiriting…"></textarea>
+      </div>
+      <div class="form-group"><label>Klinik izohlar</label>
+        <textarea class="form-control" id="fNotes" placeholder="Qo'shimcha kuzatuvlar…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="cancelBtn">Bekor qilish</button>
+      <button class="btn btn-primary" id="saveBtn">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>Tashxis tafsilotlari</h3>
+      <button class="modal-close" id="detClose">✕</button>
+    </div>
+    <div class="modal-body" id="detBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="detCloseBtn">Yopish</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+setupLayout('diseases');
+const canWrite  = Auth.is('admin','clinician');
+const canDelete = Auth.is('admin');
+if (!canWrite) document.getElementById('addWrap').style.display = 'none';
+
+let diseases = [], patients = [], editId = null;
+
+async function load(params = {}) {
+  document.getElementById('tableWrap').innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Yuklanmoqda…</p></div>';
+  try { diseases = await API.getDiseases(params); render(diseases); }
+  catch { Toast.error('Tashxislarni yuklashda xatolik'); }
+}
+
+function render(data) {
+  document.getElementById('countBadge').textContent = `${data.length} ta`;
+  if (!data.length) {
+    document.getElementById('tableWrap').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${SVG.pulse()}</div>
+        <h3>Tashxislar topilmadi</h3>
+        <p>Qidiruv shartlarini o'zgartiring yoki yangi tashxis qo'shing.</p>
+      </div>`;
+    return;
+  }
+  document.getElementById('tableWrap').innerHTML = `
+    <div class="table-wrap"><table>
+      <thead><tr><th>ICD Kodi</th><th>Tashxis</th><th>Bemor</th><th>Og'irlik</th><th>Holat</th><th>Sana</th><th>Amallar</th></tr></thead>
+      <tbody>${data.map(d => `
+        <tr>
+          <td><span class="icd-pill">${d.icdCode}</span></td>
+          <td style="max-width:240px">
+            <div class="td-primary">${d.description}</div>
+            ${d.symptoms ? `<div class="td-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px">${d.symptoms}</div>` : ''}
+          </td>
+          <td>
+            <a href="/patient-profile.html?id=${d.patientId}" style="color:var(--primary);font-weight:600;font-size:.875rem;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${d.patientName}</a>
+          </td>
+          <td>${severityBadge(d.severity)}</td>
+          <td>${statusBadge(d.status)}</td>
+          <td style="font-size:.78rem;color:var(--text-muted)">${formatDate(d.diagnosedAt)}</td>
+          <td><div class="actions-cell">
+            <button class="btn btn-secondary btn-sm btn-icon" title="Tafsilotlar" onclick="showDetail('${d.id}')">${SVG.eye()}</button>
+            ${canWrite ? `<button class="btn btn-secondary btn-sm btn-icon" title="Tahrirlash" onclick="openEdit('${d.id}')">${SVG.edit()}</button>` : ''}
+            ${canDelete ? `<button class="btn btn-danger btn-sm btn-icon" title="O'chirish" onclick="del('${d.id}')">${SVG.trash()}</button>` : ''}
+          </div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+function showDetail(id) {
+  const d = diseases.find(x => x.id === id); if (!d) return;
+  document.getElementById('detBody').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <span class="icd-pill" style="font-size:.85rem;padding:5px 12px">${d.icdCode}</span>
+      ${severityBadge(d.severity)} ${statusBadge(d.status)}
+    </div>
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:18px;color:var(--text)">${d.description}</h2>
+    <div class="info-grid" style="margin-bottom:18px">
+      <div class="info-item"><label>Bemor</label><span><a href="/patient-profile.html?id=${d.patientId}">${d.patientName}</a></span></div>
+      <div class="info-item"><label>Tashxis sanasi</label><span>${formatDate(d.diagnosedAt)}</span></div>
+      ${d.updatedAt ? `<div class="info-item"><label>Oxirgi yangilanish</label><span>${formatDate(d.updatedAt)}</span></div>` : ''}
+    </div>
+    ${d.symptoms ? `<div style="margin-bottom:14px"><div class="info-section-title">Belgilar va alomatlar</div><p style="color:var(--text-secondary);line-height:1.7">${d.symptoms}</p></div>` : ''}
+    ${d.treatment ? `<div style="margin-bottom:14px"><div class="info-section-title">Davolash rejasi</div><p style="color:var(--text-secondary);line-height:1.7">${d.treatment}</p></div>` : ''}
+    ${d.notes ? `<div style="background:var(--bg);border-radius:var(--radius);padding:14px"><div class="info-section-title">Klinik izohlar</div><p style="color:var(--text-secondary);line-height:1.7">${d.notes}</p></div>` : ''}`;
+  document.getElementById('detModal').classList.add('open');
+}
+
+const closeDet = () => document.getElementById('detModal').classList.remove('open');
+document.getElementById('detClose').addEventListener('click', closeDet);
+document.getElementById('detCloseBtn').addEventListener('click', closeDet);
+document.getElementById('detModal').addEventListener('click', e => { if (e.target === document.getElementById('detModal')) closeDet(); });
+
+// Filters
+let timer;
+document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(go, 350); });
+['filterSeverity','filterStatus','filterPatient'].forEach(id => document.getElementById(id).addEventListener('change', go));
+function go() {
+  const p = {};
+  const q = document.getElementById('searchInput').value.trim(); if (q) p.q = q;
+  const s = document.getElementById('filterSeverity').value; if (s) p.severity = s;
+  const st = document.getElementById('filterStatus').value; if (st) p.status = st;
+  const pt = document.getElementById('filterPatient').value; if (pt) p.patientId = pt;
+  load(p);
+}
+
+async function loadPatients() {
+  try {
+    patients = await API.getPatients();
+    const s1 = document.getElementById('filterPatient');
+    const s2 = document.getElementById('fPat');
+    patients.forEach(p => {
+      s1.appendChild(new Option(`${p.firstName} ${p.lastName}`, p.id));
+      s2.appendChild(new Option(`${p.firstName} ${p.lastName}`, p.id));
+    });
+  } catch {}
+}
+
+// Modal
+const modal = document.getElementById('dxModal');
+const openModal  = () => modal.classList.add('open');
+const closeModal = () => {
+  modal.classList.remove('open'); editId = null;
+  ['fIcd','fDesc','fSymp','fTreat','fNotes'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('fPat').value  = '';
+  document.getElementById('fSev').value  = '';
+  document.getElementById('fStat').value = 'Ongoing';
+};
+
+document.getElementById('addBtn')?.addEventListener('click', () => {
+  editId = null;
+  document.getElementById('modalTitle').textContent = 'Yangi tashxis qo\'shish';
+  document.getElementById('saveBtn').textContent    = 'Saqlash';
+  const pid = new URLSearchParams(location.search).get('patientId');
+  closeModal();
+  if (pid) document.getElementById('fPat').value = pid;
+  openModal();
+});
+function openEdit(id) {
+  const d = diseases.find(x => x.id === id); if (!d) return;
+  editId = id;
+  document.getElementById('modalTitle').textContent = 'Tashxis ma\'lumotlarini tahrirlash';
+  document.getElementById('saveBtn').textContent    = 'Yangilash';
+  document.getElementById('fPat').value   = d.patientId;
+  document.getElementById('fIcd').value   = d.icdCode;
+  document.getElementById('fDesc').value  = d.description;
+  document.getElementById('fSev').value   = d.severity;
+  document.getElementById('fStat').value  = d.status;
+  document.getElementById('fSymp').value  = d.symptoms||'';
+  document.getElementById('fTreat').value = d.treatment||'';
+  document.getElementById('fNotes').value = d.notes||'';
+  openModal();
+}
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const body = {
+    patientId:   document.getElementById('fPat').value,
+    icdCode:     document.getElementById('fIcd').value.trim().toUpperCase(),
+    description: document.getElementById('fDesc').value.trim(),
+    severity:    document.getElementById('fSev').value,
+    status:      document.getElementById('fStat').value,
+    symptoms:    document.getElementById('fSymp').value.trim(),
+    treatment:   document.getElementById('fTreat').value.trim(),
+    notes:       document.getElementById('fNotes').value.trim(),
+  };
+  if (!body.patientId||!body.icdCode||!body.description||!body.severity) {
+    Toast.error('Barcha majburiy maydonlarni to\'ldiring'); return;
+  }
+  const btn = document.getElementById('saveBtn'); btn.disabled = true;
+  try {
+    if (editId) { await API.updateDisease(editId, body); Toast.success('Tashxis yangilandi'); }
+    else        { await API.createDisease(body);          Toast.success('Tashxis qo\'shildi'); }
+    closeModal(); load();
+  } catch (e) { Toast.error(e.message||'Xatolik yuz berdi'); }
+  finally { btn.disabled = false; }
+});
+
+async function del(id) {
+  const d = diseases.find(x => x.id === id);
+  const ok = await confirmDialog('Tashxisni o\'chirish', `<strong>${d?.description||''}</strong> tashxisini o'chirishni tasdiqlaysizmi?`);
+  if (!ok) return;
+  try { await API.deleteDisease(id); Toast.success('Tashxis o\'chirildi'); load(); }
+  catch (e) { Toast.error(e.message||'O\'chirishda xatolik'); }
+}
+
+const prePatient = new URLSearchParams(location.search).get('patientId');
+if (prePatient) document.getElementById('filterPatient').value = prePatient;
+
+loadPatients();
+load(prePatient ? { patientId: prePatient } : {});
+</script>
+</body>
+</html>

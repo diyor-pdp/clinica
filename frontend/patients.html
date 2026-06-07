@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bemorlar — CareTrack Klinika</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span class="page-title">Bemorlar</span>
+      </div>
+      <div class="topbar-right" id="addWrap">
+        <button class="btn btn-primary btn-sm" id="addBtn">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
+          Bemor ro'yxatga olish
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h2>Bemorlar ro'yxati</h2>
+          <p>Klinikada ro'yxatdan o'tgan barcha bemorlar</p>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" class="form-control" id="searchInput" placeholder="Ism, email yoki sug'urta raqami bo'yicha qidirish…">
+        </div>
+        <select class="form-control filter-select" id="filterDoctor"><option value="">Barcha shifokorlar</option></select>
+        <select class="form-control filter-select" id="filterGender">
+          <option value="">Barcha jinsdagi</option>
+          <option value="Male">Erkak</option>
+          <option value="Female">Ayol</option>
+          <option value="Other">Boshqa</option>
+        </select>
+        <select class="form-control filter-select" id="filterBlood">
+          <option value="">Barcha qon guruhlari</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Bemorlar ro'yxati</h3>
+          <span id="countBadge" class="badge badge-teal"></span>
+        </div>
+        <div id="tableWrap">
+          <div class="loading-state"><div class="spinner"></div><p>Yuklanmoqda…</p></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="patModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="modalTitle">Bemor ro'yxatga olish</h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Ismi <span class="req">*</span></label><input type="text" class="form-control" id="fFirst" placeholder="Masalan: Jasur"></div>
+        <div class="form-group"><label>Familiyasi <span class="req">*</span></label><input type="text" class="form-control" id="fLast" placeholder="Masalan: Toshmatov"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Tug'ilgan sana <span class="req">*</span></label><input type="date" class="form-control" id="fDob"></div>
+        <div class="form-group"><label>Jinsi <span class="req">*</span></label>
+          <select class="form-control" id="fGender"><option value="">Tanlang…</option><option value="Male">Erkak</option><option value="Female">Ayol</option><option value="Other">Boshqa</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Qon guruhi</label>
+          <select class="form-control" id="fBlood"><option value="">Noma'lum</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
+        </div>
+        <div class="form-group"><label>Telefon <span class="req">*</span></label><input type="tel" class="form-control" id="fPhone" placeholder="+998 90 000 00 00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" class="form-control" id="fEmail" placeholder="bemor@email.com"></div>
+        <div class="form-group"><label>Sug'urta raqami</label><input type="text" class="form-control" id="fIns" placeholder="INS-2024-001"></div>
+      </div>
+      <div class="form-group"><label>Manzil</label><input type="text" class="form-control" id="fAddr" placeholder="Toshkent sh., Yunusobod tumani, …"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Biriktirilgan shifokor <span class="req">*</span></label>
+          <select class="form-control" id="fDoc"><option value="">Shifokorni tanlang…</option></select>
+        </div>
+        <div class="form-group"><label>Favqulodda aloqa</label><input type="text" class="form-control" id="fEmrg" placeholder="Ism — Telefon"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="cancelBtn">Bekor qilish</button>
+      <button class="btn btn-primary" id="saveBtn">Ro'yxatga olish</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+setupLayout('patients');
+const canWrite  = Auth.is('admin','reception');
+const canDelete = Auth.is('admin');
+const canEdit   = Auth.is('admin','clinician','reception');
+if (!canWrite) document.getElementById('addWrap').style.display = 'none';
+
+let patients = [], doctors = [], editId = null;
+
+const bloodBg = {'A+':'#dbeafe','A-':'#e0e7ff','B+':'#d1fae5','B-':'#fef3c7','AB+':'#ede9fe','AB-':'#fce7f3','O+':'#fee2e2','O-':'#ffedd5'};
+const bloodFg = {'A+':'#1e40af','A-':'#3730a3','B+':'#065f46','B-':'#92400e','AB+':'#5b21b6','AB-':'#9d174d','O+':'#991b1b','O-':'#9a3412'};
+
+async function load(params = {}) {
+  document.getElementById('tableWrap').innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Yuklanmoqda…</p></div>';
+  try { patients = await API.getPatients(params); render(patients); }
+  catch { Toast.error('Bemorlarni yuklashda xatolik'); }
+}
+
+function render(data) {
+  document.getElementById('countBadge').textContent = `${data.length} ta`;
+  if (!data.length) {
+    document.getElementById('tableWrap').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${SVG.users()}</div>
+        <h3>Bemorlar topilmadi</h3>
+        <p>Qidiruv shartlarini o'zgartiring yoki yangi bemor qo'shing.</p>
+      </div>`;
+    return;
+  }
+  document.getElementById('tableWrap').innerHTML = `
+    <div class="table-wrap"><table>
+      <thead><tr><th>Bemor</th><th>Yosh / Jins</th><th>Qon guruhi</th><th>Shifokor</th><th>Telefon</th><th>Sug'urta</th><th>Sana</th><th>Amallar</th></tr></thead>
+      <tbody>${data.map(p => `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:10px;background:#f0fdf4;color:#15803d;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0">${initials(p.firstName,p.lastName)}</div>
+              <div>
+                <div class="td-primary">${p.firstName} ${p.lastName}</div>
+                ${p.email ? `<div class="td-muted">${p.email}</div>` : ''}
+              </div>
+            </div>
+          </td>
+          <td class="td-primary">${age(p.dateOfBirth)} yosh <span style="color:var(--text-muted);font-weight:400">/ ${GENDER_MAP[p.gender]||p.gender}</span></td>
+          <td><span class="badge" style="background:${bloodBg[p.bloodType]||'#f1f5f9'};color:${bloodFg[p.bloodType]||'#475569'}">${p.bloodType}</span></td>
+          <td style="font-size:.875rem;color:var(--text-secondary)">${p.doctorName}</td>
+          <td style="font-size:.875rem">${p.phone}</td>
+          <td><span class="icd-pill">${p.insuranceNumber}</span></td>
+          <td style="font-size:.78rem;color:var(--text-muted)">${formatDate(p.createdAt)}</td>
+          <td><div class="actions-cell">
+            <a href="/patient-profile.html?id=${p.id}" class="btn btn-secondary btn-sm btn-icon" title="Profilni ko'rish">${SVG.eye()}</a>
+            ${canEdit ? `<button class="btn btn-secondary btn-sm btn-icon" title="Tahrirlash" onclick="openEdit('${p.id}')">${SVG.edit()}</button>` : ''}
+            ${canDelete ? `<button class="btn btn-danger btn-sm btn-icon" title="O'chirish" onclick="del('${p.id}','${p.firstName} ${p.lastName}')">${SVG.trash()}</button>` : ''}
+          </div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// Filters
+let timer;
+document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(go, 350); });
+['filterDoctor','filterGender','filterBlood'].forEach(id => document.getElementById(id).addEventListener('change', go));
+function go() {
+  const p = {};
+  const q = document.getElementById('searchInput').value.trim(); if (q) p.q = q;
+  const d = document.getElementById('filterDoctor').value; if (d) p.doctorId = d;
+  const g = document.getElementById('filterGender').value; if (g) p.gender = g;
+  const b = document.getElementById('filterBlood').value; if (b) p.bloodType = b;
+  load(p);
+}
+
+async function loadDoctors() {
+  try {
+    doctors = await API.getDoctors();
+    const s1 = document.getElementById('filterDoctor');
+    const s2 = document.getElementById('fDoc');
+    doctors.forEach(d => {
+      const lbl = `Dr. ${d.firstName} ${d.lastName} (${d.specialization})`;
+      s1.appendChild(new Option(lbl, d.id));
+      s2.appendChild(new Option(lbl, d.id));
+    });
+  } catch {}
+}
+
+// Modal
+const modal = document.getElementById('patModal');
+const fids = ['fFirst','fLast','fDob','fPhone','fEmail','fIns','fAddr','fEmrg'];
+const openModal  = () => modal.classList.add('open');
+const closeModal = () => {
+  modal.classList.remove('open'); editId = null;
+  fids.forEach(f => document.getElementById(f).value = '');
+  document.getElementById('fGender').value = '';
+  document.getElementById('fBlood').value  = '';
+  document.getElementById('fDoc').value    = '';
+};
+
+document.getElementById('addBtn')?.addEventListener('click', () => {
+  editId = null;
+  document.getElementById('modalTitle').textContent = 'Yangi bemor ro\'yxatga olish';
+  document.getElementById('saveBtn').textContent    = 'Ro\'yxatga olish';
+  closeModal(); openModal();
+});
+function openEdit(id) {
+  const p = patients.find(x => x.id === id); if (!p) return;
+  editId = id;
+  document.getElementById('modalTitle').textContent = 'Bemor ma\'lumotlarini tahrirlash';
+  document.getElementById('saveBtn').textContent    = 'Yangilash';
+  document.getElementById('fFirst').value  = p.firstName;
+  document.getElementById('fLast').value   = p.lastName;
+  document.getElementById('fDob').value    = p.dateOfBirth;
+  document.getElementById('fGender').value = p.gender;
+  document.getElementById('fBlood').value  = p.bloodType;
+  document.getElementById('fPhone').value  = p.phone;
+  document.getElementById('fEmail').value  = p.email||'';
+  document.getElementById('fIns').value    = p.insuranceNumber||'';
+  document.getElementById('fAddr').value   = p.address||'';
+  document.getElementById('fDoc').value    = p.doctorId;
+  document.getElementById('fEmrg').value   = p.emergencyContact||'';
+  openModal();
+}
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const body = {
+    firstName: document.getElementById('fFirst').value.trim(),
+    lastName:  document.getElementById('fLast').value.trim(),
+    dateOfBirth: document.getElementById('fDob').value,
+    gender:    document.getElementById('fGender').value,
+    bloodType: document.getElementById('fBlood').value || 'Unknown',
+    phone:     document.getElementById('fPhone').value.trim(),
+    email:     document.getElementById('fEmail').value.trim(),
+    insuranceNumber: document.getElementById('fIns').value.trim(),
+    address:   document.getElementById('fAddr').value.trim(),
+    doctorId:  document.getElementById('fDoc').value,
+    emergencyContact: document.getElementById('fEmrg').value.trim(),
+  };
+  if (!body.firstName||!body.lastName||!body.dateOfBirth||!body.gender||!body.phone||!body.doctorId) {
+    Toast.error('Barcha majburiy maydonlarni to\'ldiring'); return;
+  }
+  const btn = document.getElementById('saveBtn'); btn.disabled = true;
+  try {
+    if (editId) { await API.updatePatient(editId, body); Toast.success('Bemor ma\'lumotlari yangilandi'); }
+    else        { await API.createPatient(body);          Toast.success('Bemor ro\'yxatga olindi'); }
+    closeModal(); load();
+  } catch (e) { Toast.error(e.message||'Xatolik yuz berdi'); }
+  finally { btn.disabled = false; }
+});
+
+async function del(id, name) {
+  const ok = await confirmDialog('Bemorni o\'chirish', `<strong>${name}</strong> ma'lumotlari va barcha tashxislar o'chiriladi. Tasdiqlaysizmi?`);
+  if (!ok) return;
+  try { await API.deletePatient(id); Toast.success('Bemor o\'chirildi'); load(); }
+  catch (e) { Toast.error(e.message||'O\'chirishda xatolik'); }
+}
+
+loadDoctors();
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shifokorlar — CareTrack Klinika</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span class="page-title">Shifokorlar</span>
+      </div>
+      <div class="topbar-right" id="addWrap">
+        <button class="btn btn-primary btn-sm" id="addBtn">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
+          Shifokor qo'shish
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h2>Shifokorlar ro'yxati</h2>
+          <p>Klinikadagi barcha shifokorlarni boshqarish</p>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" class="form-control" id="searchInput" placeholder="Ism, email yoki litsenziya bo'yicha qidirish…">
+        </div>
+        <select class="form-control filter-select" id="filterSpec">
+          <option value="">Barcha mutaxassisliklar</option>
+          <option>Kardiologiya</option><option>Nevrologiya</option><option>Dermatologiya</option>
+          <option>Ortopediya</option><option>Umumiy amaliyot</option><option>Pediatriya</option>
+          <option>Onkologiya</option><option>Radiologiya</option><option>Psixiatriya</option>
+        </select>
+        <select class="form-control filter-select" id="filterDept">
+          <option value="">Barcha bo'limlar</option>
+          <option>Kardiologiya</option><option>Nevrologiya</option><option>Dermatologiya</option>
+          <option>Ortopediya</option><option>Umumiy amaliyot</option><option>Pediatriya</option>
+          <option>Onkologiya</option><option>Radiologiya</option><option>Psixiatriya</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Shifokorlar</h3>
+          <span id="countBadge" class="badge badge-blue"></span>
+        </div>
+        <div id="tableWrap">
+          <div class="loading-state"><div class="spinner"></div><p>Yuklanmoqda…</p></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="docModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Shifokor qo'shish</h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ismi <span class="req">*</span></label>
+          <input type="text" class="form-control" id="fFirst" placeholder="Masalan: Sarvar">
+        </div>
+        <div class="form-group">
+          <label>Familiyasi <span class="req">*</span></label>
+          <input type="text" class="form-control" id="fLast" placeholder="Masalan: Rahimov">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mutaxassislik <span class="req">*</span></label>
+          <select class="form-control" id="fSpec">
+            <option value="">Tanlang…</option>
+            <option value="Cardiology">Kardiologiya</option>
+            <option value="Neurology">Nevrologiya</option>
+            <option value="Dermatology">Dermatologiya</option>
+            <option value="Orthopedics">Ortopediya</option>
+            <option value="General Practice">Umumiy amaliyot</option>
+            <option value="Pediatrics">Pediatriya</option>
+            <option value="Oncology">Onkologiya</option>
+            <option value="Radiology">Radiologiya</option>
+            <option value="Psychiatry">Psixiatriya</option>
+            <option value="Other">Boshqa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Bo'lim <span class="req">*</span></label>
+          <select class="form-control" id="fDept">
+            <option value="">Tanlang…</option>
+            <option value="Cardiology">Kardiologiya</option>
+            <option value="Neurology">Nevrologiya</option>
+            <option value="Dermatology">Dermatologiya</option>
+            <option value="Orthopedics">Ortopediya</option>
+            <option value="General Practice">Umumiy amaliyot</option>
+            <option value="Pediatrics">Pediatriya</option>
+            <option value="Oncology">Onkologiya</option>
+            <option value="Radiology">Radiologiya</option>
+            <option value="Psychiatry">Psixiatriya</option>
+            <option value="Other">Boshqa</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Telefon <span class="req">*</span></label>
+          <input type="tel" class="form-control" id="fPhone" placeholder="+998 90 000 00 00">
+        </div>
+        <div class="form-group">
+          <label>Email <span class="req">*</span></label>
+          <input type="email" class="form-control" id="fEmail" placeholder="shifokor@klinika.uz">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Litsenziya raqami <span class="req">*</span></label>
+          <input type="text" class="form-control" id="fLicense" placeholder="MD-2024-0001">
+        </div>
+        <div class="form-group">
+          <label>Ish vaqti</label>
+          <input type="text" class="form-control" id="fAvail" placeholder="Du-Ju 09:00-17:00">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="cancelBtn">Bekor qilish</button>
+      <button class="btn btn-primary" id="saveBtn">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+setupLayout('doctors');
+if (!Auth.is('admin')) document.getElementById('addWrap').style.display = 'none';
+
+let doctors = [], editId = null;
+
+const SPEC_UZ = {
+  Cardiology:'Kardiologiya', Neurology:'Nevrologiya', Dermatology:'Dermatologiya',
+  Orthopedics:'Ortopediya', 'General Practice':'Umumiy amaliyot', Pediatrics:'Pediatriya',
+  Oncology:'Onkologiya', Radiology:'Radiologiya', Psychiatry:'Psixiatriya', Other:'Boshqa'
+};
+
+async function load(params = {}) {
+  document.getElementById('tableWrap').innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Yuklanmoqda…</p></div>';
+  try {
+    doctors = await API.getDoctors(params);
+    render(doctors);
+  } catch { Toast.error('Shifokorlarni yuklashda xatolik'); }
+}
+
+function render(data) {
+  document.getElementById('countBadge').textContent = `${data.length} ta`;
+  if (!data.length) {
+    document.getElementById('tableWrap').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${SVG.user()}</div>
+        <h3>Shifokorlar topilmadi</h3>
+        <p>Qidiruv shartlarini o'zgartiring yoki yangi shifokor qo'shing.</p>
+      </div>`;
+    return;
+  }
+  const canEdit = Auth.is('admin');
+  document.getElementById('tableWrap').innerHTML = `
+    <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Shifokor</th><th>Mutaxassislik</th><th>Bo'lim</th>
+        <th>Aloqa</th><th>Litsenziya</th><th>Ish vaqti</th>
+        ${canEdit ? '<th>Amallar</th>' : ''}
+      </tr></thead>
+      <tbody>${data.map(d => `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:10px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0">${initials(d.firstName,d.lastName)}</div>
+              <div>
+                <div class="td-primary">Dr. ${d.firstName} ${d.lastName}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-blue">${SPEC_UZ[d.specialization]||d.specialization}</span></td>
+          <td style="color:var(--text-secondary);font-size:.875rem">${SPEC_UZ[d.department]||d.department}</td>
+          <td>
+            <div class="td-primary" style="font-size:.875rem">${d.phone}</div>
+            <div class="td-muted">${d.email}</div>
+          </td>
+          <td><span class="icd-pill">${d.licenseNumber}</span></td>
+          <td style="font-size:.8rem;color:var(--text-muted)">${d.availability||'—'}</td>
+          ${canEdit ? `<td><div class="actions-cell">
+            <button class="btn btn-secondary btn-sm btn-icon" title="Tahrirlash" onclick="openEdit('${d.id}')">${SVG.edit()}</button>
+            <button class="btn btn-danger btn-sm btn-icon" title="O'chirish" onclick="del('${d.id}','${d.firstName} ${d.lastName}')">${SVG.trash()}</button>
+          </div></td>` : ''}
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+// Filters
+let timer;
+document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(go, 350); });
+document.getElementById('filterSpec').addEventListener('change', go);
+document.getElementById('filterDept').addEventListener('change', go);
+function go() {
+  const p = {};
+  const q = document.getElementById('searchInput').value.trim(); if (q) p.q = q;
+  const s = document.getElementById('filterSpec').value; if (s) p.specialization = s;
+  const d = document.getElementById('filterDept').value; if (d) p.department = d;
+  load(p);
+}
+
+// Modal
+const modal = document.getElementById('docModal');
+const fields = ['fFirst','fLast','fPhone','fEmail','fLicense','fAvail'];
+const openModal  = () => modal.classList.add('open');
+const closeModal = () => { modal.classList.remove('open'); editId = null; fields.forEach(f => document.getElementById(f).value = ''); document.getElementById('fSpec').value=''; document.getElementById('fDept').value=''; };
+
+document.getElementById('addBtn')?.addEventListener('click', () => {
+  editId = null;
+  document.getElementById('modalTitle').textContent = 'Yangi shifokor qo\'shish';
+  document.getElementById('saveBtn').textContent = 'Saqlash';
+  closeModal(); openModal();
+});
+function openEdit(id) {
+  const d = doctors.find(x => x.id === id); if (!d) return;
+  editId = id;
+  document.getElementById('modalTitle').textContent = 'Shifokor ma\'lumotlarini tahrirlash';
+  document.getElementById('saveBtn').textContent = 'Yangilash';
+  document.getElementById('fFirst').value   = d.firstName;
+  document.getElementById('fLast').value    = d.lastName;
+  document.getElementById('fSpec').value    = d.specialization;
+  document.getElementById('fDept').value    = d.department;
+  document.getElementById('fPhone').value   = d.phone;
+  document.getElementById('fEmail').value   = d.email;
+  document.getElementById('fLicense').value = d.licenseNumber;
+  document.getElementById('fAvail').value   = d.availability||'';
+  openModal();
+}
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const body = {
+    firstName: document.getElementById('fFirst').value.trim(),
+    lastName:  document.getElementById('fLast').value.trim(),
+    specialization: document.getElementById('fSpec').value,
+    department:     document.getElementById('fDept').value,
+    phone:     document.getElementById('fPhone').value.trim(),
+    email:     document.getElementById('fEmail').value.trim(),
+    licenseNumber: document.getElementById('fLicense').value.trim(),
+    availability:  document.getElementById('fAvail').value.trim(),
+  };
+  if (!body.firstName||!body.lastName||!body.specialization||!body.department||!body.phone||!body.email||!body.licenseNumber) {
+    Toast.error('Barcha majburiy maydonlarni to\'ldiring'); return;
+  }
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  try {
+    if (editId) { await API.updateDoctor(editId, body); Toast.success('Shifokor ma\'lumotlari yangilandi'); }
+    else        { await API.createDoctor(body);          Toast.success('Yangi shifokor qo\'shildi'); }
+    closeModal(); load();
+  } catch (e) { Toast.error(e.message||'Xatolik yuz berdi'); }
+  finally { btn.disabled = false; }
+});
+
+async function del(id, name) {
+  const ok = await confirmDialog('Shifokorni o\'chirish', `<strong>Dr. ${name}</strong> ma'lumotlarini o'chirishni tasdiqlaysizmi?`);
+  if (!ok) return;
+  try { await API.deleteDoctor(id); Toast.success('Shifokor o\'chirildi'); load(); }
+  catch (e) { Toast.error(e.message||'O\'chirishda xatolik'); }
+}
+
+load();
+</script>
+</body>
+</html>
